@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "365030242859",
+    "project_id": "workos-250f0",
+    "storage_bucket": "workos-250f0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:365030242859:android:49f58e238b0b44713b486e",
+        "android_client_info": {
+          "package_name": "com.example.task_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "365030242859-n1cs2j4pas321i4q4k2tsphcn1k7fig2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCJHQRpaoWBg7Md6CfYBQD5yizuj6kJCHs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "365030242859-n1cs2j4pas321i4q4k2tsphcn1k7fig2.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "365030242859-plv53fheeoel1n667ovsgplmna33100h.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.taskApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
