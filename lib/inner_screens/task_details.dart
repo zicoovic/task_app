@@ -36,7 +36,7 @@ class _TaskDetailsState extends State<TaskDetails> {
   String? userImgUlr;
   bool isDeadlineAvailable = false;
   bool _isLoading = false;
-  TextEditingController _commentController = TextEditingController();
+  final TextEditingController _commentController = TextEditingController();
   @override
   void initState() {
     getData();
@@ -306,27 +306,32 @@ class _TaskDetailsState extends State<TaskDetails> {
                             Row(
                               children: [
                                 TextButton(
-                                  onPressed: () {
-                                    User? user =
-                                        FirebaseAuth.instance.currentUser;
-                                    String _uid = user!.uid;
-                                    if (_uid == widget.uploadedBy) {
-                                      FirebaseFirestore.instance
-                                          .collection('tasks')
-                                          .doc(widget.taskID)
-                                          .update(
-                                        {
-                                          'isDone': true,
+                                  onPressed: isDeadlineAvailable
+                                      ? () {
+                                          GlobalMethods.showErrorDialog(
+                                              error: "error", context: context);
+                                        }
+                                      : () {
+                                          User? user =
+                                              FirebaseAuth.instance.currentUser;
+                                          String _uid = user!.uid;
+                                          if (_uid == widget.uploadedBy) {
+                                            FirebaseFirestore.instance
+                                                .collection('tasks')
+                                                .doc(widget.taskID)
+                                                .update(
+                                              {
+                                                'isDone': true,
+                                              },
+                                            );
+                                            getData();
+                                          } else {
+                                            GlobalMethods.showErrorDialog(
+                                                error:
+                                                    "yo cannot change the state of this tasks",
+                                                context: context);
+                                          }
                                         },
-                                      );
-                                      getData();
-                                    } else {
-                                      GlobalMethods.showErrorDialog(
-                                          error:
-                                              "yo cannot change the state of this tasks",
-                                          context: context);
-                                    }
-                                  },
                                   child: Text(
                                     'Done',
                                     style: TextStyle(
@@ -353,27 +358,32 @@ class _TaskDetailsState extends State<TaskDetails> {
                                   width: 10,
                                 ),
                                 TextButton(
-                                  onPressed: () {
-                                    User? user =
-                                        FirebaseAuth.instance.currentUser;
-                                    String _uid = user!.uid;
-                                    if (_uid == widget.uploadedBy) {
-                                      FirebaseFirestore.instance
-                                          .collection('tasks')
-                                          .doc(widget.taskID)
-                                          .update(
-                                        {
-                                          'isDone': false,
+                                  onPressed: isDeadlineAvailable
+                                      ? () {
+                                          GlobalMethods.showErrorDialog(
+                                              error: "error", context: context);
+                                        }
+                                      : () {
+                                          User? user =
+                                              FirebaseAuth.instance.currentUser;
+                                          String _uid = user!.uid;
+                                          if (_uid == widget.uploadedBy) {
+                                            FirebaseFirestore.instance
+                                                .collection('tasks')
+                                                .doc(widget.taskID)
+                                                .update(
+                                              {
+                                                'isDone': false,
+                                              },
+                                            );
+                                            getData();
+                                          } else {
+                                            GlobalMethods.showErrorDialog(
+                                                error:
+                                                    "you cannot change the state of this tasks",
+                                                context: context);
+                                          }
                                         },
-                                      );
-                                      getData();
-                                    } else {
-                                      GlobalMethods.showErrorDialog(
-                                          error:
-                                              "yo cannot change the state of this tasks",
-                                          context: context);
-                                    }
-                                  },
                                   child: Text(
                                     'Not Done yet',
                                     style: TextStyle(
@@ -549,6 +559,7 @@ class _TaskDetailsState extends State<TaskDetails> {
                                                       );
                                                       _commentController
                                                           .clear();
+                                                      setState(() {});
                                                     }
                                                   },
                                                   child: const Padding(
@@ -595,11 +606,14 @@ class _TaskDetailsState extends State<TaskDetails> {
                                               MaterialStateProperty.all(
                                                   Colors.pink),
                                         ),
-                                        onPressed: () {
-                                          setState(() {
-                                            _isCommenting = !_isCommenting;
-                                          });
-                                        },
+                                        onPressed: isDeadlineAvailable
+                                            ? null
+                                            : () {
+                                                setState(() {
+                                                  _isCommenting =
+                                                      !_isCommenting;
+                                                });
+                                              },
                                         child: const Text(
                                           'Add a comment',
                                         ),
@@ -609,20 +623,51 @@ class _TaskDetailsState extends State<TaskDetails> {
                             const SizedBox(
                               height: 30,
                             ),
-                            ListView.separated(
-                              reverse: true,
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemBuilder: (context, index) {
-                                return CommentWidget();
-                              },
-                              separatorBuilder: (context, index) {
-                                return const Divider(
-                                  thickness: 1,
+                            FutureBuilder<DocumentSnapshot>(
+                              future: FirebaseFirestore.instance
+                                  .collection('tasks')
+                                  .doc(widget.taskID)
+                                  .get(),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const Center(
+                                    child: CircularProgressIndicator(),
+                                  );
+                                } else {
+                                  if (snapshot.data == null) {
+                                    return Container();
+                                  }
+                                }
+                                return ListView.separated(
+                                  reverse: true,
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemBuilder: (context, index) {
+                                    return CommentWidget(
+                                      commentBody: snapshot.data!['taskComment']
+                                          [index]['commentBody'],
+                                      commentID: snapshot.data!['taskComment']
+                                          [index]['commentId'],
+                                      commenterId: snapshot.data!['taskComment']
+                                          [index]['userId'],
+                                      name: snapshot.data!['taskComment'][index]
+                                          ['name'],
+                                      userImageUrl:
+                                          snapshot.data!['taskComment'][index]
+                                              ['userImageUrl'],
+                                    );
+                                  },
+                                  separatorBuilder: (context, index) {
+                                    return const Divider(
+                                      thickness: 1,
+                                    );
+                                  },
+                                  itemCount:
+                                      snapshot.data!['taskComment'].length,
                                 );
                               },
-                              itemCount: 20,
-                            )
+                            ),
                           ],
                         ),
                       ),
